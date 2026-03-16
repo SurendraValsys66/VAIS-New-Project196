@@ -4,10 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Sparkles, Loader, AlertCircle, CheckCircle, Send, ChevronDown, Menu, X } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader, AlertCircle, CheckCircle, Send, ChevronDown, Menu, X, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { AIBuilderSidebar } from "./AIBuilderSidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface GeneratedLayout {
   title: string;
@@ -102,6 +110,8 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showSidebar, setShowSidebar] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<"tabs" | "history">("tabs");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,6 +126,43 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
       newExpanded.add(sectionId);
     }
     setExpandedSections(newExpanded);
+  };
+
+  const handleBackClick = () => {
+    setShowSaveModal(true);
+  };
+
+  const handleSaveDesign = () => {
+    // Save design to localStorage
+    const savedDesigns = JSON.parse(localStorage.getItem("savedAIDesigns") || "[]");
+    const newDesign = {
+      id: `design-${Date.now()}`,
+      name: `AI Generated Design - ${new Date().toLocaleDateString()}`,
+      messages: chatMessages,
+      createdAt: new Date().toISOString(),
+    };
+    savedDesigns.push(newDesign);
+    localStorage.setItem("savedAIDesigns", JSON.stringify(savedDesigns));
+
+    setShowSaveModal(false);
+    if (onBack) onBack();
+  };
+
+  const handleDontSave = () => {
+    setShowSaveModal(false);
+    if (onBack) onBack();
+  };
+
+  const getUserMessagesOnly = () => {
+    return chatMessages.filter((msg) => msg.type === "user");
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   };
 
   const handleGenerateLayout = async () => {
@@ -303,7 +350,7 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
             <div className="border-b border-gray-200 bg-white flex items-center justify-between px-3 py-2">
               <h2 className="text-base font-bold text-gray-900">AI Builder Chat</h2>
               <Button
-                onClick={onBack}
+                onClick={handleBackClick}
                 variant="ghost"
                 size="icon"
                 className="text-gray-600 hover:bg-gray-100"
@@ -312,9 +359,35 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
               </Button>
             </div>
 
-            {/* Chat Messages */}
+            {/* Tabs */}
+            <div className="border-b border-gray-200 flex bg-white px-2">
+              <button
+                onClick={() => setActiveTab("tabs")}
+                className={cn(
+                  "flex-1 py-2 px-3 text-xs font-medium border-b-2 transition-colors",
+                  activeTab === "tabs"
+                    ? "border-b-valasys-orange text-valasys-orange"
+                    : "border-b-transparent text-gray-600 hover:text-gray-900"
+                )}
+              >
+                Tabs
+              </button>
+              <button
+                onClick={() => setActiveTab("history")}
+                className={cn(
+                  "flex-1 py-2 px-3 text-xs font-medium border-b-2 transition-colors",
+                  activeTab === "history"
+                    ? "border-b-valasys-orange text-valasys-orange"
+                    : "border-b-transparent text-gray-600 hover:text-gray-900"
+                )}
+              >
+                History
+              </button>
+            </div>
+
+            {/* Chat Messages / History Tab Content */}
             <div className="flex-1 overflow-y-auto space-y-2 p-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-              {chatMessages.map((message) => (
+              {activeTab === "tabs" && chatMessages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
@@ -402,6 +475,34 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
                   </div>
                 </div>
               ))}
+
+              {activeTab === "history" && (
+                <div className="space-y-2">
+                  {getUserMessagesOnly().length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Clock className="w-8 h-8 text-gray-300 mb-2" />
+                      <p className="text-xs text-gray-500">No history yet</p>
+                    </div>
+                  ) : (
+                    getUserMessagesOnly().map((message) => (
+                      <div
+                        key={message.id}
+                        className="bg-gray-50 rounded-lg p-2.5 border border-gray-200"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-900 break-words">{message.content}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {formatTime(message.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
 
@@ -466,6 +567,36 @@ export const AIBuilder: React.FC<AIBuilderProps> = ({ onBack, onGenerateComplete
             </div>
           </div>
         </div>
+
+        {/* Save Design Modal */}
+        <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-500" />
+                Save Your Design?
+              </DialogTitle>
+              <DialogDescription>
+                Would you like to save this AI-generated landing page design? You can add it to your templates and use it later.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-3">
+              <Button
+                onClick={handleDontSave}
+                variant="outline"
+                className="flex-1"
+              >
+                Don't Save
+              </Button>
+              <Button
+                onClick={handleSaveDesign}
+                className="flex-1 bg-valasys-orange hover:bg-valasys-orange/90 text-white"
+              >
+                Save Design
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DashboardLayout>
       </>
     );
