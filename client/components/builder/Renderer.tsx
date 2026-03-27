@@ -348,6 +348,10 @@ export const ComponentRenderer: React.FC<RendererProps> = ({
             className="w-full focus:outline-none focus:ring-0"
             contentEditable
             suppressContentEditableWarning
+            onInput={(e) => {
+              const text = e.currentTarget.textContent || "";
+              onUpdate(component.id, { contentText: text });
+            }}
             onBlur={(e) => {
               const text = e.currentTarget.textContent || "";
               onUpdate(component.id, { contentText: text });
@@ -377,6 +381,10 @@ export const ComponentRenderer: React.FC<RendererProps> = ({
             className="focus:outline-none focus:ring-0"
             contentEditable
             suppressContentEditableWarning
+            onInput={(e) => {
+              const text = e.currentTarget.textContent || "";
+              onUpdate(component.id, { contentText: text });
+            }}
             onBlur={(e) => {
               const text = e.currentTarget.textContent || "";
               onUpdate(component.id, { contentText: text });
