@@ -78,6 +78,7 @@ interface StyleState {
   featureDescription?: string;
   featureGridHeading?: string;
   featureGridDescription?: string;
+  featureGridImageUrl?: string;
 }
 
 interface SpacingState {
@@ -170,6 +171,7 @@ export const ElementStylePanel: React.FC<ElementStylePanelProps> = ({
     paragraphTextAlign: "left",
     buttonTextAlign: "left",
     selectedHeroElement: "",
+    featureGridImageUrl: "",
   });
 
   const [spacing, setSpacing] = React.useState<SpacingState>({
@@ -341,6 +343,9 @@ export const ElementStylePanel: React.FC<ElementStylePanelProps> = ({
         featureIcon,
         featureTitle,
         featureDescription,
+        featureGridHeading: component.featureGridHeading || "",
+        featureGridDescription: component.featureGridDescription || "",
+        featureGridImageUrl: component.featureGridImageUrl || "",
       });
 
       // Initialize units from component
@@ -1939,6 +1944,19 @@ export const ElementStylePanel: React.FC<ElementStylePanelProps> = ({
                       rows={3}
                     />
                   )}
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-2">
+                    Section Image URL
+                  </label>
+                  <Input
+                    type="text"
+                    value={styles.featureGridImageUrl || ""}
+                    onChange={(e) => handleStyleChange("featureGridImageUrl", e.target.value)}
+                    placeholder="Enter image URL"
+                    className="text-xs h-8"
+                  />
                 </div>
               </div>
             )}
