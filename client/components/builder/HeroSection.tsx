@@ -92,6 +92,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       badge: "heroBadgeText",
       heading: "heroHeadingText",
       paragraph: "heroDescriptionText",
+      primaryButton: "heroPrimaryButtonText",
+      secondaryButton: "heroSecondaryButtonText",
     };
 
     const key = updateMap[elementId];
@@ -396,15 +398,39 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             onClick={() => handleElementClick(element.id)}
           >
             <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-              <Button className="px-10 py-7 text-lg font-bold rounded-2xl bg-valasys-orange shadow-xl hover:shadow-2xl transition-all hover:bg-valasys-orange/90">
-                Start Free Trial
-              </Button>
-              <Button
-                variant="outline"
-                className="px-10 py-7 text-lg font-bold rounded-2xl border-gray-200"
-              >
-                Watch Demo
-              </Button>
+              {isSelected ? (
+                <Input
+                  value={component.heroPrimaryButtonText || "Start Free Trial"}
+                  data-element-id="primaryButton"
+                  onChange={(e) => handleElementUpdate("primaryButton", e.target.value)}
+                  onFocus={handleEditableFocus}
+                  onBlur={() => setEditingElementId(null)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-auto min-w-[220px] rounded-2xl border-0 bg-valasys-orange px-10 py-7 text-center text-lg font-bold text-white shadow-xl focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              ) : (
+                <Button className="px-10 py-7 text-lg font-bold rounded-2xl bg-valasys-orange shadow-xl hover:shadow-2xl transition-all hover:bg-valasys-orange/90">
+                  {component.heroPrimaryButtonText || "Start Free Trial"}
+                </Button>
+              )}
+              {isSelected ? (
+                <Input
+                  value={component.heroSecondaryButtonText || "Watch Demo"}
+                  data-element-id="secondaryButton"
+                  onChange={(e) => handleElementUpdate("secondaryButton", e.target.value)}
+                  onFocus={handleEditableFocus}
+                  onBlur={() => setEditingElementId(null)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-auto min-w-[180px] rounded-2xl border border-gray-200 bg-white px-10 py-7 text-center text-lg font-bold text-gray-900 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              ) : (
+                <Button
+                  variant="outline"
+                  className="px-10 py-7 text-lg font-bold rounded-2xl border-gray-200"
+                >
+                  {component.heroSecondaryButtonText || "Watch Demo"}
+                </Button>
+              )}
             </div>
             {renderControls()}
           </div>
