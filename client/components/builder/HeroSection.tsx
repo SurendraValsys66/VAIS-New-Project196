@@ -444,7 +444,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   overflowWrap: "break-word",
                   whiteSpace: "normal",
                   width: "100%",
-                  maxWidth: paragraphWidth || "100%",
+                  maxWidth: "100%",
                   fontSize: paragraphFontSize || "1.125rem",
                 }}
               >
