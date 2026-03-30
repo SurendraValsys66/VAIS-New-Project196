@@ -158,42 +158,48 @@ export const useLayout = (initialData: BuilderComponent[] = []) => {
   }, []);
 
   const duplicateComponent = useCallback((id: string) => {
-    const findAndDuplicate = (
-      components: BuilderComponent[],
-      parentId: string | null = null,
-    ): { components: BuilderComponent[]; duplicated: boolean } => {
-      let duplicated = false;
-
-      const newComponents = components.map((comp) => {
-        if (comp.id === id) {
-          duplicated = true;
-          // Create a deep copy of the component
-          const duplicate: BuilderComponent = {
-            ...comp,
-            id: Math.random().toString(36).substr(2, 9),
-            children: comp.children ? comp.children.map(deepCloneComponent) : comp.children,
-          };
-          return duplicate;
-        }
-        if (comp.children) {
-          const result = findAndDuplicate(comp.children, comp.id);
-          if (result.duplicated) {
-            duplicated = true;
-            return { ...comp, children: result.components };
-          }
-        }
-        return comp;
-      });
-
-      return { components: newComponents, duplicated };
-    };
-
     const deepCloneComponent = (comp: BuilderComponent): BuilderComponent => {
       return {
         ...comp,
         id: Math.random().toString(36).substr(2, 9),
         children: comp.children ? comp.children.map(deepCloneComponent) : comp.children,
       };
+    };
+
+    const findAndDuplicate = (
+      components: BuilderComponent[],
+    ): { components: BuilderComponent[]; found: boolean } => {
+      let found = false;
+      const newComponents: BuilderComponent[] = [];
+
+      for (const comp of components) {
+        if (comp.id === id) {
+          // Found the component to duplicate - add original and duplicate
+          found = true;
+          newComponents.push(comp);
+          const duplicate = deepCloneComponent(comp);
+          newComponents.push(duplicate);
+        } else if (comp.children && comp.children.length > 0) {
+          // Recursively search in children
+          const result = findAndDuplicate(comp.children);
+          if (result.found) {
+            found = true;
+            // Create a new component with updated children
+            newComponents.push({
+              ...comp,
+              children: result.components,
+            });
+          } else {
+            // Children were not modified, push original
+            newComponents.push(comp);
+          }
+        } else {
+          // No children or not found - push original
+          newComponents.push(comp);
+        }
+      }
+
+      return { components: newComponents, found };
     };
 
     setLayout((prev) => {
