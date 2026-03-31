@@ -1,6 +1,7 @@
 import React from "react";
 import { LandingPageBlock } from "./types";
 import { getBlockStyles } from "./utils";
+import { cn } from "@/lib/utils";
 export {
   SectionBlockPreview,
   RowBlockPreview,
@@ -380,9 +381,59 @@ export const PricingBlockPreview: React.FC<BlockPreviewProps> = ({
   block,
   isSelected,
   onSelect,
+  onUpdate,
 }) => {
   const props = block.properties;
   const blockStyles = getBlockStyles(props);
+  const [hoveredTierId, setHoveredTierId] = React.useState<string | null>(null);
+  const [selectedTierId, setSelectedTierId] = React.useState<string | null>(null);
+  const [hoveredElement, setHoveredElement] = React.useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = React.useState<string | null>(null);
+
+  const handleTierClick = (e: React.MouseEvent, tierId: string) => {
+    e.stopPropagation();
+    setSelectedTierId(selectedTierId === tierId ? null : tierId);
+  };
+
+  const handleElementClick = (e: React.MouseEvent, elementId: string) => {
+    e.stopPropagation();
+    setSelectedElement(selectedElement === elementId ? null : elementId);
+  };
+
+  const handleCopyElement = (e: React.MouseEvent, text: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    alert("Text copied to clipboard!");
+  };
+
+  const handleDeleteElement = (e: React.MouseEvent, elementId: string) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to delete this element?")) {
+      if (elementId === "heading") {
+        onUpdate({ heading: "" });
+      } else if (elementId === "subheading") {
+        onUpdate({ subheading: "" });
+      }
+      setSelectedElement(null);
+    }
+  };
+
+  const handleCopyTier = (e: React.MouseEvent, tier: any) => {
+    e.stopPropagation();
+    const tierText = `${tier.name} - ${tier.price} - ${tier.features?.join(", ")}`;
+    navigator.clipboard.writeText(tierText);
+    alert("Tier copied to clipboard!");
+  };
+
+  const handleDeleteTier = (e: React.MouseEvent, tierId: string) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to delete this pricing tier?")) {
+      const updatedTiers = props.pricingTiers?.filter((t: any) => t.id !== tierId) || [];
+      onUpdate({ pricingTiers: updatedTiers });
+      setSelectedTierId(null);
+    }
+  };
+
   return (
     <div
       onClick={onSelect}
@@ -392,19 +443,115 @@ export const PricingBlockPreview: React.FC<BlockPreviewProps> = ({
       style={blockStyles}
     >
       <div className="px-8 py-8">
-        <h2 className="text-3xl font-bold text-center mb-2" style={{ color: props.textColor || "#1f2937" }}>
-          {props.heading}
-        </h2>
-        <p className="text-center mb-8" style={{ color: props.textColor || "#4b5563" }}>{props.subheading}</p>
+        <div
+          className={cn(
+            "cursor-pointer transition-all rounded p-3 mb-2 relative",
+            selectedElement === "heading" && "bg-orange-50",
+            hoveredElement === "heading" && selectedElement !== "heading" && "bg-gray-50",
+          )}
+          style={{
+            border: selectedElement === "heading"
+              ? "2px solid #FF6A00"
+              : hoveredElement === "heading"
+              ? "2px dashed #FF6A00"
+              : "2px solid #e5e7eb",
+          }}
+          onMouseEnter={() => setHoveredElement("heading")}
+          onMouseLeave={() => setHoveredElement(null)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleElementClick(e, "heading");
+          }}
+        >
+          <h2 className="text-3xl font-bold text-center" style={{ color: props.textColor || "#1f2937" }}>
+            {props.heading}
+          </h2>
+          {selectedElement === "heading" && (
+            <div className="mt-3 flex gap-2 pt-3 border-t border-gray-300">
+              <button
+                onClick={(e) => handleCopyElement(e, props.heading)}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                title="Copy text"
+              >
+                <span>📋</span> Copy
+              </button>
+              <button
+                onClick={(e) => handleDeleteElement(e, "heading")}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                title="Delete this element"
+              >
+                <span>🗑️</span> Delete
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div
+          className={cn(
+            "cursor-pointer transition-all rounded p-3 mb-8 relative",
+            selectedElement === "subheading" && "bg-orange-50",
+            hoveredElement === "subheading" && selectedElement !== "subheading" && "bg-gray-50",
+          )}
+          style={{
+            border: selectedElement === "subheading"
+              ? "2px solid #FF6A00"
+              : hoveredElement === "subheading"
+              ? "2px dashed #FF6A00"
+              : "2px solid #e5e7eb",
+          }}
+          onMouseEnter={() => setHoveredElement("subheading")}
+          onMouseLeave={() => setHoveredElement(null)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleElementClick(e, "subheading");
+          }}
+        >
+          <p className="text-center" style={{ color: props.textColor || "#4b5563" }}>
+            {props.subheading}
+          </p>
+          {selectedElement === "subheading" && (
+            <div className="mt-3 flex gap-2 pt-3 border-t border-gray-300">
+              <button
+                onClick={(e) => handleCopyElement(e, props.subheading)}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                title="Copy text"
+              >
+                <span>📋</span> Copy
+              </button>
+              <button
+                onClick={(e) => handleDeleteElement(e, "subheading")}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                title="Delete this element"
+              >
+                <span>🗑️</span> Delete
+              </button>
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-3 gap-8">
           {props.pricingTiers?.map((tier: any) => (
             <div
               key={tier.id}
-              className={`rounded-lg p-8 text-center transition-all ${
-                tier.isHighlighted
-                  ? "bg-gray-900 text-white shadow-lg scale-105"
-                  : "bg-white border border-gray-200"
-              }`}
+              className={cn(
+                "rounded-lg p-8 text-center transition-all relative cursor-pointer",
+                tier.isHighlighted ? "bg-gray-900 text-white shadow-lg scale-105" : "bg-white",
+              )}
+              style={{
+                border: selectedTierId === tier.id
+                  ? "2px solid #FF6A00"
+                  : hoveredTierId === tier.id
+                  ? "2px dashed #FF6A00"
+                  : "1px solid #e5e7eb",
+              }}
+              onMouseEnter={(e) => {
+                e.stopPropagation();
+                setHoveredTierId(tier.id);
+              }}
+              onMouseLeave={(e) => {
+                e.stopPropagation();
+                setHoveredTierId(null);
+              }}
+              onClick={(e) => handleTierClick(e, tier.id)}
             >
               <h3 className="text-lg font-semibold mb-2">{tier.name}</h3>
               <div className="text-4xl font-bold mb-2">{tier.price}</div>
@@ -431,6 +578,25 @@ export const PricingBlockPreview: React.FC<BlockPreviewProps> = ({
               >
                 {tier.buttonText}
               </button>
+
+              {selectedTierId === tier.id && (
+                <div className="mt-4 flex gap-2 pt-4 border-t border-gray-300">
+                  <button
+                    onClick={(e) => handleCopyTier(e, tier)}
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                    title="Copy tier details"
+                  >
+                    <span>📋</span> Copy
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteTier(e, tier.id)}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded font-medium text-sm transition-colors flex items-center justify-center gap-1"
+                    title="Delete this tier"
+                  >
+                    <span>🗑️</span> Delete
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
