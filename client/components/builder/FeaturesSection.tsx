@@ -47,6 +47,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
     selectedHeaderElement as "heading" | "description" | null
   );
   const [isClickingControl, setIsClickingControl] = React.useState(false);
+  const [editingHeaderElementId, setEditingHeaderElementId] = React.useState<string | null>(null);
 
   const features: Feature[] = (block.properties.features || []) as Feature[];
 
@@ -361,14 +362,22 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
                   )}
                   contentEditable
                   suppressContentEditableWarning
+                  onInput={(e) => {
+                    const newText = e.currentTarget.textContent || "";
+                    handleUpdateHeaderElement(element.id, newText);
+                    setEditingHeaderElementId(element.id);
+                  }}
                   onBlur={(e) => {
-                    handleUpdateHeaderElement(element.id, e.currentTarget.textContent || "");
+                    const newText = e.currentTarget.textContent || "";
+                    handleUpdateHeaderElement(element.id, newText);
+                    setEditingHeaderElementId(null);
                     if (!isClickingControl) {
                       setLocalSelectedHeaderElement(null);
                       onSelect?.(null);
                     }
                   }}
                   onFocus={(e) => {
+                    setEditingHeaderElementId(element.id);
                     setLocalSelectedHeaderElement(element.id);
                     onSelect?.({ type: element.type, id: element.id });
                   }}
@@ -378,6 +387,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
                     e.stopPropagation();
                     if (localSelectedHeaderElement === element.id) return;
                     setLocalSelectedHeaderElement(element.id);
+                    setEditingHeaderElementId(element.id);
                     onSelect?.({ type: element.type, id: element.id });
                   }}
                 >
