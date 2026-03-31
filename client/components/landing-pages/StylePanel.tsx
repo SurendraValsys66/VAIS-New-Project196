@@ -358,7 +358,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({ onClose }) => {
                       className="w-16 text-xs h-7"
                     />
                     <Select value={paddingUnit} onValueChange={(val) => setPaddingUnit(val as "px" | "%")}>
-                      <SelectTrigger className="w-16 h-7 text-xs">
+                      <SelectTrigger className="w-20 h-7 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -415,7 +415,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({ onClose }) => {
                           className="w-16 text-xs h-7"
                         />
                         <Select value={paddingUnit} onValueChange={(val) => setPaddingUnit(val as "px" | "%")}>
-                          <SelectTrigger className="w-14 h-7 text-xs">
+                          <SelectTrigger className="w-20 h-7 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -481,7 +481,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({ onClose }) => {
                       className="w-16 text-xs h-7"
                     />
                     <Select value={marginUnit} onValueChange={(val) => setMarginUnit(val as "px" | "%")}>
-                      <SelectTrigger className="w-16 h-7 text-xs">
+                      <SelectTrigger className="w-20 h-7 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -538,7 +538,7 @@ export const StylePanel: React.FC<StylePanelProps> = ({ onClose }) => {
                           className="w-16 text-xs h-7"
                         />
                         <Select value={marginUnit} onValueChange={(val) => setMarginUnit(val as "px" | "%")}>
-                          <SelectTrigger className="w-14 h-7 text-xs">
+                          <SelectTrigger className="w-20 h-7 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
