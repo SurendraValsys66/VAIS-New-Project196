@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { BuilderCanvas } from "@/components/builder/Canvas";
@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Plus, Layout, Search, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -17,39 +24,77 @@ interface PageData {
   updatedAt: string;
   thumbnail?: string;
   templateImage?: string;
+  category?: string;
 }
+
+const CATEGORIES = [
+  "All Categories",
+  "Click-through",
+  "Coming Soon",
+  "Discount",
+  "Ebook",
+  "Ecommerce",
+  "Event",
+  "Finance",
+  "Holiday",
+  "Information Technology",
+  "Lead Generation",
+  "Mobile App",
+  "NewsLetter",
+  "Online Course",
+  "Real Estate",
+  "Thank You",
+  "Tourism",
+  "Webinar",
+];
 
 export default function LandingPages() {
   const navigate = useNavigate();
   const [view, setView] = useState<View>("list");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTemplate, setSelectedTemplate] = useState<PageData | null>(null);
   const [pages, setPages] = useState<PageData[]>([
     {
       id: "1",
       name: "Modern Hero Page",
       updatedAt: "2024-03-20T10:00:00Z",
+      category: "Click-through",
       templateImage: "https://cdn.builder.io/api/v1/image/assets%2Fddd1f2eefed243f880ce4c077bf467dd%2Fc791842089ab4e8a8223fa1c37011b01?format=webp&width=800&height=1200"
     },
     {
       id: "2",
       name: "SaaS Product Landing",
       updatedAt: "2024-03-19T15:30:00Z",
+      category: "Ecommerce",
       templateImage: "https://cdn.builder.io/api/v1/image/assets%2Fddd1f2eefed243f880ce4c077bf467dd%2Fce37966ddf2b45dca81b913547a9f779?format=webp&width=800&height=1200"
     },
     {
       id: "3",
       name: "Black Friday Sale",
       updatedAt: "2024-03-18T12:00:00Z",
+      category: "Discount",
       templateImage: "https://cdn.builder.io/api/v1/image/assets%2Fddd1f2eefed243f880ce4c077bf467dd%2F122aa3a978f347f6ae8013a8201b7046?format=webp&width=800&height=1200"
     },
     {
       id: "4",
       name: "Sports Club",
       updatedAt: "2024-03-17T09:15:00Z",
+      category: "Event",
       templateImage: "https://cdn.builder.io/api/v1/image/assets%2Fddd1f2eefed243f880ce4c077bf467dd%2Fa8f973a0ccc04d81a3e1de84669932c9?format=webp&width=800&height=1200"
     },
   ]);
+
+  const filteredPages = useMemo(() => {
+    return pages.filter((page) => {
+      const matchesCategory =
+        selectedCategory === "All Categories" || page.category === selectedCategory;
+      const matchesSearch = page.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [pages, selectedCategory, searchQuery]);
 
   const handleCreateNew = () => {
     setSelectedTemplate(null);
@@ -131,6 +176,24 @@ export default function LandingPages() {
               </div>
             </div>
 
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Filter by Category
+              </label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full md:w-64 py-6 rounded-2xl border-gray-200 shadow-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* Create new page button - first position */}
               <button onClick={handleCreateNew} className="group rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-12 hover:border-valasys-orange hover:bg-valasys-orange/5 transition-all gap-4 text-gray-400 hover:text-valasys-orange h-64">
@@ -144,7 +207,7 @@ export default function LandingPages() {
               </button>
 
               {/* Template cards */}
-              {pages.map((page) => (
+              {filteredPages.map((page) => (
                 <div
                   key={page.id}
                   className="group rounded-2xl border-2 border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border-b-4 border-b-transparent hover:border-b-valasys-orange"
